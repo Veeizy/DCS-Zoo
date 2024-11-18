@@ -1,0 +1,25 @@
+1。项目简述
+    zoo是一个一站式dcs地图制作工具解决方案
+    zoo会有以下几个模块
+
+    - zoo-gate      : zoo的模块及其依赖管理及入口
+
+    - zoo-elephant  : 用于管理dcs中所有对象以及事件的管理和记录
+    - zoo-cage      : 一个对于各类场地的逻辑的框架
+    - zoo-util      : 封装游戏内各类功能的工具
+    - zoo-monkey    : 用于实现各类ai逻辑的框架
+    - zoo-logger    : 用于输出各类日志的日志框架
+    - zoo-mighty    : 一个封装的单位生成与管理框架 
+    - zoo-guard     : 错误处理框架
+    - zoo-server    : 常用的服务器管理模块
+    - zoo-cmd       : 命令处理模块
+    - zoo-snake     : 商店与经济模块
+    - zoo-mission   : 任务模块
+    - zoo-bbq       : 热更新模块
+    - zoo-pizza     : 循环管理模块
+    - zoo-donkey    : 动态难度框架
+
+    - zoo-invoker   : 通过游戏内的名称定义来实现功能的模块
+
+    - zoo-bus       : 基于zoo基本框架，实现一系列动态战役常用功能
+    - zoo-director  : 基于zoo基本框架实现一系列导演任务常用功能
