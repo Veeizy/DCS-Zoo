@@ -50,10 +50,9 @@ do
         env.info(message)
         error(message)
     end
-    local TERMINATE_CODE = 1
-
-    _zoo_table = nil
-
+    
+    local _zoo_table = nil
+    local _loaded = nil
 
     if not lfs then
         _err("can not initialize zoo without module:lfs")
@@ -224,12 +223,16 @@ do
     end
 
     function z_gate.load(module)
+        if _loaded[module] then
+            return 
+        end
+
         local m = z_gate.get_module(module)
         if not m then
             _err("module not found:"..module)
             return
         end
-
+        _loaded[module] = true
         if m.dependencies then
             for _, d in pairs(m.dependencies) do
                 z_gate.load(d)
@@ -248,12 +251,12 @@ do
         则报错
         若当前不为is_init则运行main函数
     ]]
-    function z_gate.run(module,args,is_init)
-        local m = z_gate.get_module(module)
-        for _, d in pairs(m.dependencies) do
-            if m.args_table and m.args_table[d] then
+
+    function z_gate.run_dependencies(module)
+        for _, d in pairs(module.dependencies) do
+            if module.args_table and module.args_table[d] then
                 local depened_arg = {}
-                for to, from in pairs(m.args_table[d]) do
+                for to, from in pairs(module.args_table[d]) do
                     depened_arg[to] = args[from]
                 end
                 z_gate.run(d,depened_arg,true)
@@ -261,6 +264,18 @@ do
                 z_gate.run(d,nil,true)
             end 
         end
+    end
+
+    function z_gate.run(module,args,is_init)
+        if _loaded[module] then
+            return 
+        end
+        _loaded[module] = true
+
+        local m = z_gate.get_module(module)
+
+        z_gate.run_dependencies(m)
+        
         local o = m:get_object()
 
         if not o then
@@ -297,10 +312,13 @@ do
     end
 
     function z_gate.go(module,args)
+        _loaded = {}
         z_gate.load(module)
+        _loaded = {}
         z_gate.run(module,args)
         
         _zoo_table = nil
+        _loaded = nil
     end
 
     
