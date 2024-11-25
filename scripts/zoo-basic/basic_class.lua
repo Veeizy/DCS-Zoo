@@ -61,15 +61,17 @@ do
             __state = state,
             field = {}
         },{__index = self})
-        for _, var in pairs(self.vars) do
+        for var, _ in pairs(self.vars) do
             if args[var] then
-                o[var] = args[var]
+                o.field[var] = args[var]
             else
-                o[var] = self.vars.default
+                o.field[var] = self.vars.default
             end
         end
 
-        table.insert(self.objects,o)
+        self.objects[o] = o
+
+        self:invalid_index()
 
         return o 
     end
@@ -90,28 +92,33 @@ do
 
         self.object_index[var] = {
             objects ={},
-            conflict = conflict
+            conflict = conflict,
+            invalid = true
         }
     end
 
     function Basic.class:build_index_conflict(var)
         local list = {}
-        for _, o in pairs(self.objects) do
+        for o, _ in pairs(self.objects) do
             local v = o:get(var)
-            if list[v] then
-                Guard.basic_index_conflict(o)
-            else
-                list[v] = o
+            if v then
+                if list[v] then
+                    Guard.basic_index_conflict(o)
+                else
+                    list[v] = o
+                end
             end
         end
         return list
     end
     function Basic.class:build_index_no_conflict(var)
         local list = {}
-        for _, o in pairs(self.objects) do
+        for o, _ in pairs(self.objects) do
             local v = o:get(var)
-            list[v] = list[v] or {}
-            table.insert(list[v],o)
+            if v then
+                list[v] = list[v] or {}
+                table.insert(list[v],o)
+            end
         end
         return list
     end
@@ -120,12 +127,31 @@ do
         if not self.object_index[var] then
             Guard.basic_index_is_undefined(self.class_id.." has no ["..var.."] index")
         end
+        if not self.object_index[var].invalid then
+            return
+        end
         if self.object_index[var].conflict then
             self.object_index[var].objects = self:build_index_conflict(var)
         else
             self.object_index[var].objects = self:build_index_no_conflict(var)
         end
+        self.object_index[var].invalid = false
     end
+
+    function Basic.class:invalid_index(var)
+        if var then
+            if not self.object_index[var] then
+                Guard.basic_index_is_undefined(self.class_id.." has no ["..var.."] index")
+            end
+            self.object_index[var].invalid = true
+        else
+            for var, _ in pairs(self.object_index) do
+                self:invalid_index(var)
+            end
+        end
+    end
+
+
 
     function Basic.class:build_index()
         for var, _ in pairs(self.object_index) do
@@ -137,12 +163,15 @@ do
         if not index then
             return self.objects
         end
-        if not self.get_objects[index] then
+        if not self.object_index[index] then
             return nil
-        elseif self.get_objects[index].conflict then
-            return self.get_objects[index].objects[value]
         else
-            return self.get_objects[index].objects[value] or {}
+            self:build_index_var(index)
+            if self.object_index[index].conflict then
+                return self.object_index[index].objects[value]
+            else
+                return self.object_index[index].objects[value] or {}
+            end
         end
     end
 end

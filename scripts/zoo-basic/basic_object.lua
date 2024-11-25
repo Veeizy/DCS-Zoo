@@ -85,6 +85,7 @@ do
     function Basic.class:un_set(key,v)
         self:__verify_object()
         self.field[key] = v
+        self:invalid_index(key)
     end
     
     function Basic.class:dump()
