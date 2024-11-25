@@ -4,6 +4,8 @@
 
     - zoo-gate      : zoo的模块及其依赖管理及入口
 
+    - zoo-Basic     : 状态机工作框架
+
     - zoo-elephant  : 用于管理dcs中所有对象以及事件的管理和记录
     - zoo-cage      : 一个对于各类场地的逻辑的框架
     - zoo-util      : 封装游戏内各类功能的工具
@@ -18,6 +20,7 @@
     - zoo-bbq       : 热更新模块
     - zoo-pizza     : 循环管理模块
     - zoo-donkey    : 动态难度框架
+    - zoo-nav       : 定义地图各个区域，以便于导航的框架
 
     - zoo-invoker   : 通过游戏内的名称定义来实现功能的模块
 

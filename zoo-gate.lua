@@ -212,7 +212,7 @@ do
                 local absolute_path = path..'/'..file
                 local attr = lfs.attributes(absolute_path)
                 if attr.mode == "directory" then
-                    load_dir_scripts(absolute_path)
+                    z_gate.load_scripts(absolute_path)
                 else
                     if string.match(file,'[.]lua$') then
                         dofile(absolute_path)
