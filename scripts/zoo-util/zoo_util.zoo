@@ -1,0 +1,3 @@
+Zoo_module():
+object("Util"):
+depend("zoo_guard")

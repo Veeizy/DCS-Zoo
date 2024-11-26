@@ -14,6 +14,7 @@ do
             Guard.error(self.message_handler(self.error_type,unpack({...})))
         end
     }
+    --更新Gurad的函数时，需在此行以前添加，在此以后添加的内容均被视为异常
     Guard = setmetatable(Guard,{__newindex  = function(self,k,v)
         rawset(self,k,setmetatable(
             {

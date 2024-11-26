@@ -1,4 +1,5 @@
 do  
+    
 
     ---@class Basic_index
     ---@field objects table<string,table<Basic_object,Basic_object>>|table<string,Basic_object>
@@ -52,7 +53,16 @@ do
     ---@field build_index fun(self:Basic_class)
     ---@field get_objects fun(self:Basic_class,index:string|nil,value:any)Basic_object|table<Basic_object,Basic_object>
     ---@field get_objects_with_state fun(self:Basic_class,state:string)table<Basic_object,Basic_object>
+   
+    ---@class Basic_active_source
+    ---@field interval number
+    ---@field func function 
+        
+    ---@alias Basic_passive_source function 
 
-
-    
+    ---@class Basic_data_source
+    ---@field data_pool table<string,any>
+    ---@field data_source_id string
+    ---@field active_data_source table<string,Basic_active_source>
+    ---@field passive_data_source table<string,Basic_passive_source>
 end
