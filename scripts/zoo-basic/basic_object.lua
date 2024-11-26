@@ -52,6 +52,55 @@ do
         end
         return rtn
     end
+    --该函数仅在创建对象时用以将新对象加入索引中(已废弃，不要调用)
+    function Basic.class:add_to_index()
+        self:__verify_object()
+        for var, _ in pairs(self.object_index) do
+            self:update_index_var(var,self:get(var))
+        end
+    end
+
+    function Basic.class:update_index_var(var,value,from)
+        self:__verify_object()
+        --确认索引存在
+        if not self.object_index[var] then
+            Guard.basic_index_is_undefined(var)
+        end
+        
+        if not self.object_index[var].conflict then
+            --处理非冲突索引
+            --当旧值非空时，则检查旧索引是否存在，并移除旧索引
+            if from and self.object_index[var].objects[from] then
+                self.object_index[var].objects[from][self] = nil
+            else
+                --当旧值为空时，从空表删除旧索引
+                self.object_index[var]._nil[self] = nil
+            end
+            --确认当前索引表不为nil
+            self.object_index[var].objects[value] = self.object_index[var].objects[value] or {}
+            --如果当前索引值不为空，则存入数值表 若否则存入空表
+            if value then
+                self.object_index[var].objects[value][self] = self
+            else
+                self.object_index[var]._nil[self] = self
+            end
+        else
+            --确认目标值是否存在冲突
+            if self.object_index[var].objects[value] then
+                Guard.basic_index_conflict(var,value)
+            end
+            --删除旧索引
+            if from and self.object_index[var].objects[from] then
+                self.object_index[var].objects[from] = nil
+            end
+            --冲突索引值不能为空
+            if value then
+                self.object_index[var].objects[value] = self
+            else
+                Guard.basic_index_error("conflict index ["..var.."] cant not be nil")
+            end
+        end
+    end
 
     function Basic.class:update()
         self:__verify_object()
@@ -84,8 +133,10 @@ do
 
     function Basic.class:un_set(key,v)
         self:__verify_object()
+        if self.object_index[key] then
+            self:update_index_var(key,v,self.field[key])
+        end
         self.field[key] = v
-        self:invalid_index(key)
     end
     
     function Basic.class:dump()

@@ -7,6 +7,8 @@ Guard.basic_index_is_undefined = nil
 Guard.basic_wrong_method_called = nil
 Guard.basic_type_error = nil
 Guard.basic_index_duplicate = nil
+Guard.basic_index_error = nil
+Guard.basic_index_is_undefined = nil
 Guard.basic_index_conflict = function(k,v)
     local msg=msg..tostring(k).." : "..tostring(v)
     Guard.message(msg)
