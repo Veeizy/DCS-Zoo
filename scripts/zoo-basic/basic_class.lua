@@ -3,18 +3,31 @@ Basic = Basic or {}
 do
     Basic.class = {}
     -- 定义一个状态
-    function Basic.class:state(name)
+    --- func desc
+    ---@param self Basic_class
+    ---@param name string
+    ---@return Basic_class
+    function Basic.class.state(self,name)
         self.status[name] = name
         return self
     end
     -- 定义成员变量
     -- 未定义的变量在检查状态后会被清除
-    function Basic.class:var(name,default)
+    --- func desc
+    ---@param self Basic_class
+    ---@param name any
+    ---@param default any
+    function Basic.class.var(self,name,default)
         self.vars[name] = {default = default}
         return self
     end
-    -- 
-    function Basic.class:condition(condition_id,from,to,func)
+    --- func desc
+    ---@param self Basic_class
+    ---@param condition_id string
+    ---@param from string|nil
+    ---@param to string
+    ---@param func fun(self:Basic_object):boolean
+    function Basic.class.condition(self,condition_id,from,to,func)
         --参数校验  
         if not self.status[from] then
             Guard.basic_state_is_undefined(from)
@@ -35,11 +48,17 @@ do
             Guard.basic_condition_duplicate(condition_id)
         end
         
-        condition_container[condition_id] = {func = func , to = to}
+        local condition_handler = {func = func , to = to}
+
+        condition_container[condition_id] = condition_handler
         return self
     end
-    -- 
-    function Basic.class:new(args,state)
+
+    ---@param self Basic_class
+    ---@param args table<string,any>|nil
+    ---@param state string
+    ---@return Basic_object
+    function Basic.class.new(self,args,state)
         if args == nil then
             args = {}
         end
@@ -67,16 +86,26 @@ do
             end
         end
         self.objects[o] = o
+        self.state_index[state] = self.state_index[state] or {}
+        self.state_index[state][o] = o
         return o 
     end
 
-    function Basic.class:action(state,func)
+    --- func desc
+    ---@param self Basic_class
+    ---@param state string
+    ---@param func fun(self:Basic_object)
+    function Basic.class.action(self,state,func)
         self.actions[state] = self.actions[state] or {}
         table.insert(self.actions[state],func)
         return self
     end
 
-    function Basic.class:index(var,conflict)
+    --- func desc
+    ---@param self Basic_class
+    ---@param var string
+    ---@param conflict boolean
+    function Basic.class.index(self,var,conflict)
         if not self.vars[var] then
             Guard.basic_variable_is_undefined(var)
         end
@@ -92,7 +121,11 @@ do
         }
     end
 
-    function Basic.class:build_index_conflict(var)
+    --- func desc
+    ---@param self Basic_class
+    ---@param var string
+    ---@return table<string,Basic_object>
+    function Basic.class.build_index_conflict(self,var)
         local list = {}
         for o, _ in pairs(self.objects) do
             local v = o:get(var)
@@ -108,7 +141,12 @@ do
         end
         return list
     end
-    function Basic.class:build_index_no_conflict(var)
+
+    --- func desc
+    ---@param self Basic_class
+    ---@param var string
+    ---@return table<string,table<Basic_object,Basic_object>> , table<Basic_object,Basic_object>
+    function Basic.class.build_index_no_conflict(self,var)
         local list = {}
         local _nil = {}
         for o, _ in pairs(self.objects) do
@@ -123,7 +161,10 @@ do
         return list,_nil
     end
 
-    function Basic.class:build_index_var(var)
+    --- func desc
+    ---@param self Basic_class
+    ---@param var string
+    function Basic.class.build_index_var(self,var)
         if not self.object_index[var] then
             Guard.basic_index_is_undefined(self.class_id.." has no ["..var.."] index")
         end
@@ -139,7 +180,10 @@ do
         self.object_index[var].invalid = false
     end
 
-    function Basic.class:invalid_index(var)
+    --- func desc
+    ---@param self Basic_class
+    ---@param var string
+    function Basic.class.invalid_index(self,var)
         if var then
             if not self.object_index[var] then
                 Guard.basic_index_is_undefined(self.class_id.." has no ["..var.."] index")
@@ -152,15 +196,19 @@ do
         end
     end
 
-    
-
-    function Basic.class:build_index()
+    --- func desc
+    ---@param self Basic_class
+    function Basic.class.build_index(self)
         for var, _ in pairs(self.object_index) do
             self:build_index_var(var)
         end
     end
-
-    function Basic.class:get_objects(index,value)
+    --- func desc
+    ---@param self Basic_class
+    ---@param index string
+    ---@param value string
+    ---@return Basic_object|table<Basic_object,Basic_object>
+    function Basic.class.get_objects(self,index,value)
         if not index then
             return self.objects
         end
@@ -178,5 +226,13 @@ do
                 end
             end
         end
+    end
+
+    --- func desc
+    ---@param self Basic_class
+    ---@param state any
+    ---@return table<Basic_object,Basic_object>
+    function Basic.class.get_objects_with_state(self,state)
+        return self.state_index[state] or {}
     end
 end

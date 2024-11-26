@@ -2,31 +2,41 @@ Basic = Basic or {}
 
 do
     -- method for object
-    function Basic.class:__verify_object()
+    ---@param self Basic_object
+    function Basic.class.__verify_object(self)
         if not self.__object then
             Guard.basic_wrong_method_called("cant call update method for class "..self.class_id)
         end
     end
-    function Basic.class:__set_state(state)
+    --- func desc
+    ---@param self Basic_object
+    ---@param state string
+    function Basic.class.__set_state(self,state)
         self:__verify_object()
         if not self.status[state] then
             Guard.basic_state_is_undefined(state)
         end
         self.__state = state
+        self.state_index[state] = self.state_index[state] or {}
+        self.state_index[state][self] = self
     end
 
-    function Basic.class:update_with_condition(condition_container)
+    --- func desc
+    ---@param self Basic_object
+    ---@param condition_container table<string,condition_handler>
+    function Basic.class.update_with_condition(self,condition_container)
         local state_changed = false
-        for condition_id, value in pairs(condition_container) do
-            if not state_changed and value.func(self) then
+        for condition_id, condition_handler in pairs(condition_container) do
+            if not state_changed and condition_handler.func(self) then
                 state_changed = true
-                self:__set_state(value.to)
+                self:__set_state(condition_handler.to)
             end
         end
         return state_changed
     end
 
-    function Basic.class:do_action()
+    ---@param self Basic_object
+    function Basic.class.do_action(self)
         if self.actions[self.__state] then
             for _, action in pairs(self.actions[self.__state]) do
                 action(self)
@@ -34,7 +44,9 @@ do
         end
     end
 
-    function Basic.class:update_with_common_condition()
+    ---@param self Basic_object
+    ---@return boolean
+    function Basic.class.update_with_common_condition(self)
         local rtn = self:update_with_condition(self.common_condition)
         if rtn then
             self:do_action()
@@ -42,7 +54,9 @@ do
         return rtn
     end
 
-    function Basic.class:update_with_state_condition()
+    ---@param self Basic_object
+    ---@return boolean
+    function Basic.class.update_with_state_condition(self)
         if not self.conditions[self.__state] then
             return false
         end
@@ -53,14 +67,19 @@ do
         return rtn
     end
     --该函数仅在创建对象时用以将新对象加入索引中(已废弃，不要调用)
-    function Basic.class:add_to_index()
+    ---@param self Basic_object
+    function Basic.class.add_to_index(self)
         self:__verify_object()
         for var, _ in pairs(self.object_index) do
             self:update_index_var(var,self:get(var))
         end
     end
 
-    function Basic.class:update_index_var(var,value,from)
+    ---@param self Basic_object
+    ---@param var string
+    ---@param value any
+    ---@param from string|nil
+    function Basic.class.update_index_var(self,var,value,from)
         self:__verify_object()
         --确认索引存在
         if not self.object_index[var] then
@@ -102,7 +121,8 @@ do
         end
     end
 
-    function Basic.class:update()
+    ---@param self Basic_object
+    function Basic.class.update(self)
         self:__verify_object()
         if not self:update_with_common_condition() then
             self:update_with_state_condition()
@@ -110,17 +130,27 @@ do
         self:dump()
     end
     
-    function Basic.class:get(key)
+    ---@param self Basic_object
+    ---@param key string
+    ---@return any
+    function Basic.class.get(self,key)
         self:__verify_object()
         return self.field[key]
     end
-    function Basic.class:set(key,v)
+    --- func desc
+    ---@param self Basic_object
+    ---@param key string
+    ---@param v any
+    function Basic.class.set(self,key,v)
         self:__verify_object()
         self:un_set(key,v)
         self:update()
     end
 
-    function Basic.class:multi_set(args)
+    --- func desc
+    ---@param self Basic_object
+    ---@param args table<string,any>
+    function Basic.class.multi_set(self,args)
         self:__verify_object()
         if type(args) ~= "table" then
             Guard.basic_type_error("args for multi_set must be a table")
@@ -131,7 +161,11 @@ do
         self:update()
     end
 
-    function Basic.class:un_set(key,v)
+    --- func desc
+    ---@param self Basic_object
+    ---@param key string
+    ---@param v any
+    function Basic.class.un_set(self,key,v)
         self:__verify_object()
         if self.object_index[key] then
             self:update_index_var(key,v,self.field[key])
@@ -139,7 +173,8 @@ do
         self.field[key] = v
     end
     
-    function Basic.class:dump()
+    ---@param self Basic_object
+    function Basic.class.dump(self)
         self:__verify_object()
         local d = {}
         for k, v in pairs(self.field) do
