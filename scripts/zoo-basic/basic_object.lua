@@ -26,11 +26,23 @@ do
     ---@param condition_container table<string,condition_handler>
     function Basic.class.update_with_condition(self,condition_container)
         local state_changed = false
+        local weight_table = {}
         for condition_id, condition_handler in pairs(condition_container) do
-            if not state_changed and condition_handler.func(self) then
+            if condition_handler.func(self) then
                 state_changed = true
-                self:__set_state(condition_handler.to)
+                weight_table[condition_handler.weight] = condition_handler.to
             end
+        end
+        if state_changed then
+            local to = nil
+            local max = 0
+            for w, t in pairs(weight_table) do
+                if w> max then
+                    max = w
+                    to =t
+                end
+            end
+            self:__set_state(to)
         end
         return state_changed
     end
@@ -135,7 +147,20 @@ do
     ---@return any
     function Basic.class.get(self,key)
         self:__verify_object()
-        return self.field[key]
+        local rtn = self.field[key]
+        if not rtn then
+            for c, v in pairs(self.attached_class) do
+                rtn = __class(c):get_objects(v,self.field[v]).get(key)
+                if rtn then break end
+            end
+        end
+        if not rtn then
+            for c, f in pairs(self.attached_method) do
+                rtn = f(self,__class(c)).get(key)
+                if rtn then break end
+            end
+        end
+        return rtn
     end
     --- func desc
     ---@param self Basic_object

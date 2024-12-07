@@ -4,7 +4,7 @@ do
     local unpack = unpack or table.unpack
     function Guard.error (message)
         env.info(message)
-        error(message)
+        error(message,3)
     end 
     function Guard.message(error_type,message)
         return error_type.." : "..message

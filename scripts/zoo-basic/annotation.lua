@@ -9,6 +9,7 @@ do
 
     ---@class condition_handler
     ---@field func fun(self:Basic_object):boolean
+    ---@field weight number
     ---@field to string
 
     ---@class Basic_object:Basic_class
@@ -40,6 +41,9 @@ do
     ---@field object_index table<string,Basic_index>
     ---@field objects table<Basic_object,Basic_object>
     ---@field state_index table<string,Basic_index>
+    ---@field attached_class table<string,string>
+    ---@field attached_method table<string,fun(self:Basic_object,class:Basic_class):Basic_object>
+    ---@field attach fun(self:Basic_class,class:string,key:string,func:fun(self:Basic_object,class:Basic_class):Basic_object)
     ---@field state fun(self:Basic_class,name:string):Basic_class 
     ---@field var fun(self:Basic_class,name:string,default:any):Basic_class 
     ---@field condition fun(self:Basic_class,condition_id:string,from:string,to:string,func:fun(self:Basic_object):boolean):Basic_class
@@ -53,16 +57,6 @@ do
     ---@field build_index fun(self:Basic_class)
     ---@field get_objects fun(self:Basic_class,index:string|nil,value:any)Basic_object|table<Basic_object,Basic_object>
     ---@field get_objects_with_state fun(self:Basic_class,state:string)table<Basic_object,Basic_object>
-   
-    ---@class Basic_active_source
-    ---@field interval number
-    ---@field func function 
-        
-    ---@alias Basic_passive_source function 
+    ---@field has_index_conflict fun(self:Basic_class,var:string):boolean
 
-    ---@class Basic_data_source
-    ---@field data_pool table<string,any>
-    ---@field data_source_id string
-    ---@field active_data_source table<string,Basic_active_source>
-    ---@field passive_data_source table<string,Basic_passive_source>
 end

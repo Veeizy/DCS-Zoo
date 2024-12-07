@@ -13,4 +13,4 @@ Guard.basic_index_conflict = function(k,v)
     local msg=msg..tostring(k).." : "..tostring(v)
     Guard.message(msg)
 end
-Guard.basic_data_source_duplicate=nil
+Guard.basic_attach_error = nil

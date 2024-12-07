@@ -26,7 +26,9 @@ do
                 actions = {},
                 object_index = {},
                 objects = {},
-                state_index = {}
+                state_index = {},
+                attached_class = {},
+                attached_method = {}
             },
             {
                 __index = Basic.class

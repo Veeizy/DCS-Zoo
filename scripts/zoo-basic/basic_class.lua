@@ -27,7 +27,8 @@ do
     ---@param from string|nil
     ---@param to string
     ---@param func fun(self:Basic_object):boolean
-    function Basic.class.condition(self,condition_id,from,to,func)
+    ---@param weight number
+    function Basic.class.condition(self,condition_id,from,to,func,weight)
         --参数校验  
         if not self.status[from] then
             Guard.basic_state_is_undefined(from)
@@ -48,7 +49,7 @@ do
             Guard.basic_condition_duplicate(condition_id)
         end
         
-        local condition_handler = {func = func , to = to}
+        local condition_handler = {func = func , to = to ,weight = weight or 0 }
 
         condition_container[condition_id] = condition_handler
         return self
@@ -235,4 +236,33 @@ do
     function Basic.class.get_objects_with_state(self,state)
         return self.state_index[state] or {}
     end
+    --- func desc
+    ---@param self Basic_class
+    ---@param var string
+    ---@return boolean
+    function Basic.class.has_index_conflict(self,var)
+        if not self.object_index[var] then
+            return false
+        end
+        return self.object_index[var].conflict
+    end
+
+    --- func desc
+    ---@param self Basic_class
+    ---@param class string
+    ---@param key string
+    ---@param func nil|fun(self:Basic_object,class:Basic_class):Basic_object
+    ---@return Basic_class
+    function Basic.class.attach(self,class,key,func)
+        if  type(func)=="function" then
+            self.attached_method[class] = func
+        elseif type(key)=="string" then
+            if not __class(class):has_index_conflict(key)then
+                Guard.basic_index_error("cant attach to class without conflict index")
+            else
+                self.attached_class[class] = key
+            end
+        end
+    end
+
 end
