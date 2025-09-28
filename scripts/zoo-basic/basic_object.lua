@@ -16,6 +16,8 @@ do
         if not self.status[state] then
             Guard.basic_state_is_undefined(state)
         end
+        self.state_index[self.__state] = self.state_index[self.__state] or {}
+        self.state_index[self.__state][self] = nil
         self.__state = state
         self.state_index[state] = self.state_index[state] or {}
         self.state_index[state][self] = self
@@ -48,7 +50,13 @@ do
     end
 
     ---@param self Basic_object
-    function Basic.class.do_action(self)
+    ---@param from string
+    function Basic.class.do_action(self,from)
+        if self.actions_from[self.__state] and self.actions_from[self.__state][from] then
+            for _, action in pairs(self.actions_from[self.__state][from]) do
+                action(self)
+            end
+        end
         if self.actions[self.__state] then
             for _, action in pairs(self.actions[self.__state]) do
                 action(self)
@@ -59,9 +67,10 @@ do
     ---@param self Basic_object
     ---@return boolean
     function Basic.class.update_with_common_condition(self)
+        local state = self.__state
         local rtn = self:update_with_condition(self.common_condition)
         if rtn then
-            self:do_action()
+            self:do_action(state)
         end
         return rtn
     end
@@ -72,9 +81,10 @@ do
         if not self.conditions[self.__state] then
             return false
         end
+        local state = self.__state
         local rtn = self:update_with_condition(self.conditions[self.__state])
         if rtn then
-            self:do_action()
+            self:do_action(state)
         end
         return rtn
     end

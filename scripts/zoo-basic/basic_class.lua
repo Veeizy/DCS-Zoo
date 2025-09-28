@@ -49,7 +49,7 @@ do
             Guard.basic_condition_duplicate(condition_id)
         end
         
-        local condition_handler = {func = func , to = to ,weight = weight or 0 }
+        local condition_handler = {func = func , to = to ,weight = weight or 1 }
 
         condition_container[condition_id] = condition_handler
         return self
@@ -83,7 +83,7 @@ do
             if args[var] then
                 o:un_set(var,args[var])
             else
-                o:un_set(var,self.vars.default)
+                o:un_set(var,self.vars[var].default)
             end
         end
         self.objects[o] = o
@@ -95,10 +95,26 @@ do
     --- func desc
     ---@param self Basic_class
     ---@param state string
+    ---@param from string|nil
     ---@param func fun(self:Basic_object)
-    function Basic.class.action(self,state,func)
-        self.actions[state] = self.actions[state] or {}
-        table.insert(self.actions[state],func)
+    function Basic.class.action(self,state,from,func)
+
+        if not self.status[state] then
+            Guard.basic_state_is_undefined(state)
+        end
+        if from and not self.status[from] then
+            Guard.basic_state_is_undefined(from)
+        end
+        
+        if from then
+            self.actions_from[state] = self.actions_from[state] or {}
+            self.actions_from[state][from] = self.actions_from[state][from] or {}
+            table.insert(self.actions_from[state][from],func)
+        else
+            self.actions[state] = self.actions[state] or {}
+            table.insert(self.actions[state],func)
+        end
+        
         return self
     end
 
@@ -120,6 +136,27 @@ do
             conflict = conflict,
             invalid = false
         }
+        return self
+    end
+
+    --- func desc
+    ---@param self Basic_class
+    ---@param name string
+    ---@param func function
+    ---@return Basic_class
+    function Basic.class.func(self,name,func)
+        if func ~= nil and type(func) == "function" then
+            self.functions[name]=func
+        end
+        return self
+    end
+
+    --- func desc
+    ---@param self Basic_class
+    ---@param name string
+    ---@return function
+    function Basic.class.get_func(self,name)
+        return self.functions[name]
     end
 
     --- func desc
@@ -264,5 +301,7 @@ do
             end
         end
     end
+
+
 
 end

@@ -24,11 +24,13 @@ do
                 common_condition = {},
                 conditions = {},
                 actions = {},
+                actions_from = {},
                 object_index = {},
                 objects = {},
                 state_index = {},
                 attached_class = {},
-                attached_method = {}
+                attached_method = {},
+                functions ={} 
             },
             {
                 __index = Basic.class
@@ -45,7 +47,8 @@ do
     ---@param state string
     ---@return Basic_object
     function __new(class,args,state)
-        return __class(class):new(args,state)
+        --return __class(class):new(args,state)
+        return Basic.proxy.new(__class(class),args,state)
     end
     --- func desc
     ---@param class string
@@ -59,4 +62,5 @@ do
         end
         return Basic.class_manager[class]
     end
+
 end
