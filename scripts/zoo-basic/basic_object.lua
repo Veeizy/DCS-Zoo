@@ -27,10 +27,11 @@ do
     ---@param self Basic_object
     ---@param condition_container table<string,condition_handler>
     function Basic.class.update_with_condition(self,condition_container)
+        
         local state_changed = false
         local weight_table = {}
         for condition_id, condition_handler in pairs(condition_container) do
-            if condition_handler.func(self) then
+            if condition_handler.func(Basic.proxy.decorate(self)) then
                 state_changed = true
                 weight_table[condition_handler.weight] = condition_handler.to
             end
@@ -54,12 +55,12 @@ do
     function Basic.class.do_action(self,from)
         if self.actions_from[self.__state] and self.actions_from[self.__state][from] then
             for _, action in pairs(self.actions_from[self.__state][from]) do
-                action(self)
+                action(Basic.proxy.decorate(self))
             end
         end
         if self.actions[self.__state] then
             for _, action in pairs(self.actions[self.__state]) do
-                action(self)
+                action(Basic.proxy.decorate(self))
             end
         end
     end
