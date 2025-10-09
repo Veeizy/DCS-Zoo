@@ -21,6 +21,7 @@ do
         self.vars[name] = {default = default}
         return self
     end
+
     --- func desc
     ---@param self Basic_class
     ---@param condition_id string
@@ -28,7 +29,22 @@ do
     ---@param to string
     ---@param func fun(self:Basic_object):boolean
     ---@param weight number
-    function Basic.class.condition(self,condition_id,from,to,func,weight)
+    function Basic.class.condition(self,from,to,weightOrfunc,func)
+        if type(weightOrfunc)=="function"then
+            return self:raw_condition(from,to,nil,weightOrfunc)
+        elseif type(weightOrfunc)=="string" then
+            return self:raw_condition(from,to,tonumber(weightOrfunc),func)
+        end
+        Guard.basic_type_error(weightOrfunc)
+    end
+    --- func desc
+    ---@param self Basic_class
+    ---@param condition_id string
+    ---@param from string|nil
+    ---@param to string
+    ---@param func fun(self:Basic_object):boolean
+    ---@param weight number
+    function Basic.class.raw_condition(self,from,to,weight,func)
         --参数校验  
         if not self.status[from] then
             Guard.basic_state_is_undefined(from)
@@ -45,9 +61,10 @@ do
             condition_container = self.conditions[from]
         end
         --参数校验
-        if condition_container[condition_id] then
-            Guard.basic_condition_duplicate(condition_id)
-        end
+        condition_id = #condition_container+1
+        -- if condition_container[condition_id] then
+        --     Guard.basic_condition_duplicate(condition_id)
+        -- end
         
         local condition_handler = {func = func , to = to ,weight = weight or 1 }
 

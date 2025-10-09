@@ -14,3 +14,5 @@ Guard.basic_index_conflict = function(k,v)
     Guard.message(msg)
 end
 Guard.basic_attach_error = nil
+
+Guard.basic_not_definer_function = nil
